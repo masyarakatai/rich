@@ -397,3 +397,14 @@ def test_recursive_exception() -> None:
             console.print_exception(show_locals=True)
 
     bar()
+
+
+def test_exception_chain_cycle() -> None:
+    first = ValueError("first")
+    second = RuntimeError("second")
+    first.__context__ = second
+    second.__cause__ = first
+
+    trace = Traceback.extract(type(first), first, None)
+
+    assert [stack.exc_type for stack in trace.stacks] == ["ValueError", "RuntimeError"]
